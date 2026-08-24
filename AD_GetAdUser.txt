@@ -1,0 +1,33 @@
+Get-Aduser -Filter * -Properties Name,Enabled,Title | Select Name,Enabled,Title | Out-GridView
+# $Results | export-csv C:\Temp\userlist\Output.csv -NTI -Append
+Get-ADUser -Filter * -Properties Title | Select-Object Name, Enabled, Title | Out-GridView
+Get-ADUser -Filter * -Properties Title | Select-Object Name, Enabled, Title | Format-Table -AutoSize
+Get-ADUser -Filter * -Properties Title | Select-Object Name, Enabled, Title, Disting* | Out-GridView
+
+# AD User zählen
+(Get-ADUser).Count
+
+# AD User per OU
+(Get-ADUser -Filter 'Enabled -eq $true' -SearchBase "OU=User,OU=Cloeren,DC=EMO,DC=local").Count
+(Get-ADUser -Filter * -SearchBase "OU=User,OU=Cloeren,DC=EMO,DC=local").Count
+
+# Filtert typische System- und Dienstkonten heraus
+(Get-ADUser -Filter "Enabled -eq `$true" -Properties Mail | Where-Object {
+    $_.Mail -ne $null -and $_.SamAccountName -notlike "SM_*" -and $_.SamAccountName -notlike "healthmail*"
+}).Count
+
+# alle Aktiven User zählen
+(Get-ADUser -Filter 'Enabled -eq $true').Count
+# Alle User zählen
+(Get-ADUser -Filter *).count
+
+# alle aktiven User ausgeben
+Get-ADUser -Filter 'Enabled -eq $true' | ft
+
+
+#################################
+# Get user information: FirstName, LastName, SAMAccountName, UPN, DisplayName, EmailAddress, and Title
+$users = Get-ADUser -Filter { Enabled -eq $true } -Property GivenName, Surname, SAMAccountName, UserPrincipalName, DisplayName, EmailAddress, Title, Department, Enabled, DistinguishedName  |
+Select-Object DisplayName, GivenName, Surname, SAMAccountName, UserPrincipalName, EmailAddress, Title, Department, Enabled, DistinguishedName, @{Name="OU";Expression={$_.DistinguishedName -replace '^CN=.*?,OU=(.*?),DC=.*$','$1'}}
+$users | Export-Csv "C:\install\ADExport\AD_User_Export.csv" -Encoding Unicode -NoTypeInformation -Delimiter ";"
+#################################

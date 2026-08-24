@@ -1,0 +1,35 @@
+# Modul für Gruppenrichtlinien laden
+Import-Module GroupPolicy -ErrorAction Stop
+
+# Basis-Pfad und Datumsformat (JJJJMMTT) definieren
+$baseBackupPath = "C:\Install\Backup\GPO"
+$dateFolder = Get-Date -Format "yyyyMMdd"
+
+# Alle GPOs der Domäne abrufen
+$allGPOs = Get-GPO -All
+
+Write-Host "Starte Backup von $($allGPOs.Count) Gruppenrichtlinien..." -ForegroundColor Cyan
+
+foreach ($gpo in $allGPOs) {
+    # Ungültige Windows-Pfadzeichen aus dem GPO-Namen entfernen
+    $safeGpoName = $gpo.DisplayName -replace '[\\/:*?"<>|]', '_'
+    
+    # Zielverzeichnis: C:\Install\Backup\GPO\[Name der GPO]\[JJJJMMTT]
+    $targetPath = Join-Path (Join-Path $baseBackupPath $safeGpoName) $dateFolder
+
+    # Ordner erstellen, falls nicht existent
+    if (-not (Test-Path -Path $targetPath)) {
+        New-Item -ItemType Directory -Path $targetPath -Force | Out-Null
+    }
+
+    try {
+        # Backup für das jeweilige GPO-Objekt ausführen
+        Backup-GPO -Guid $gpo.Id -Path $targetPath | Out-Null
+        Write-Host "✅ Gesichert: '$($gpo.DisplayName)'" -ForegroundColor Green
+    }
+    catch {
+        Write-Host "❌ Fehler bei GPO '$($gpo.DisplayName)': $_" -ForegroundColor Red
+    }
+}
+
+Write-Host "`nGPO-Backup erfolgreich abgeschlossen!" -ForegroundColor Cyan

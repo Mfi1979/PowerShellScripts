@@ -1,0 +1,7 @@
+$FilePath = "C:\install\ADExport\"
+$FileDetail = "EMO_ADUser_PWD_20150514"
+$FileExt = ".csv"
+$File = $FilePath + $FileDetail + $FileExt
+
+Get-ADUser -Filter * -Properties CannotChangePassword | 
+Export-Csv $File -NoTypeInformation -Delimiter ";" -Encoding unicode 

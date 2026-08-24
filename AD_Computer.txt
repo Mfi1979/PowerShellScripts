@@ -1,0 +1,12 @@
+get-adcomputer testvmwcwork -prop sid
+get-adcomputer vmwindchillwork -prop sid
+
+
+### Windows 10 
+Get-ADComputer -Filter "OperatingSystem -Like '*Windows 10*' -and Enabled -eq 'True'" -Properties Name |  Sort-Object  | ft Name
+###
+
+### enabled true
+(Get-ADComputer -filter {enabled -eq $true}).count
+
+

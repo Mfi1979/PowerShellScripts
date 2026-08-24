@@ -1,0 +1,2 @@
+# Zeigt die zuletzt installierten Updates/Hotfixes sortiert nach Datum
+Get-HotFix | Sort-Object InstalledOn -Descending | Select-Object -First 10 HotFixID, Description, InstalledOn

@@ -1,0 +1,8 @@
+$RDPs = (Get-ADComputer -Filter "OperatingSystem -Like '*Windows 10*' -and Enabled -eq 'True'" -Properties Name).Name # | select Name | ft
+$NamePart = "-RDP"
+foreach ($RDP in $RDPs) 
+    {
+    $GroupName = $RDP + $NamePart
+    write-host Create Group $GroupName -ForegroundColor Green
+    New-ADGroup -Name $GroupName -SamAccountName $GroupName  -GroupCategory Security -GroupScope DomainLocal -Path "OU=RDP,OU=Gruppen,OU=Cloeren,DC=EMO,DC=local"
+    }

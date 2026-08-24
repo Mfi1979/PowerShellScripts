@@ -1,0 +1,10 @@
+$Session = New-Object -ComObject Microsoft.Update.Session
+$Searcher = $Session.CreateUpdateSearcher()
+$Result = $Searcher.Search("IsInstalled=0 and Type='Software' and IsHidden=0")
+
+if ($Result.Updates.Count -eq 0) {
+    Write-Host "Server ist auf dem neuesten Stand. Keine ausstehenden Updates." -ForegroundColor Green
+} else {
+    Write-Host "Ausstehende Updates gefunden ($($Result.Updates.Count)):" -ForegroundColor Yellow
+    $Result.Updates | Select-Object Title, IsMandatory, Severity, AutoSelectOnWebSites | Format-Table -AutoSize
+}

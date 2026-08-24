@@ -1,0 +1,33 @@
+# Modul für Gruppenrichtlinien laden
+Import-Module GroupPolicy -ErrorAction Stop
+
+# Name der zu testenden GPO festlegen
+$gpoName = "GPO-USR-EpicorDMT" # <-- Hier den gewünschten GPO-Namen eintragen
+
+# Basis-Pfad und Datumsformat (JJJJMMTT) definieren
+$baseBackupPath = "C:\Install\Backup\GPO"
+$dateFolder = Get-Date -Format "yyyyMMdd"
+
+try {
+    # Einzelne GPO abrufen
+    $gpo = Get-GPO -Name $gpoName -ErrorAction Stop
+    Write-Host "🔍 GPO '$($gpo.DisplayName)' (ID: $($gpo.Id)) gefunden." -ForegroundColor Cyan
+
+    # Ungültige Windows-Pfadzeichen aus dem GPO-Namen bereinigen
+    $safeGpoName = $gpo.DisplayName -replace '[\\/:*?"<>|]', '_'
+    
+    # Zielverzeichnis: C:\Install\Backup\GPO\[Name der GPO]\[JJJJMMTT]
+    $targetPath = Join-Path (Join-Path $baseBackupPath $safeGpoName) $dateFolder
+
+    # Ordner erstellen, falls nicht vorhanden
+    if (-not (Test-Path -Path $targetPath)) {
+        New-Item -ItemType Directory -Path $targetPath -Force | Out-Null
+    }
+
+    # Backup ausführen
+    Backup-GPO -Guid $gpo.Id -Path $targetPath | Out-Null
+    Write-Host "✅ Backup erfolgreich erstellt unter: $targetPath" -ForegroundColor Green
+}
+catch {
+    Write-Host "❌ Fehler beim Sichern der GPO '$gpoName': $_" -ForegroundColor Red
+}
