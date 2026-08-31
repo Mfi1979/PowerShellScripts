@@ -1,0 +1,21 @@
+Import-Module ActiveDirectory
+
+$TargetOU_DN = "OU=Notebook,OU=EDV,OU=Rechner,DC=Domain,DC=net"
+$GroupName   = "ADS-SEC-Clients-ManageComputers"
+
+$TargetOU = [ADSI]"LDAP://$TargetOU_DN"
+$ACL = $TargetOU.ObjectSecurity
+$GroupSID = (Get-ADGroup -Identity $GroupName).SID.Value
+$IdentityRef = [System.Security.Principal.SecurityIdentifier]::new($GroupSID)
+
+# Vollzugriff (GenericAll) auf die OU und alle vererbten Objekte
+$AccessRule = [System.DirectoryServices.ActiveDirectoryAccessRule]::new(
+    $IdentityRef,
+    [System.DirectoryServices.ActiveDirectoryRights]::GenericAll,
+    [System.Security.AccessControl.AccessControlType]::Allow,
+    [System.DirectoryServices.ActiveDirectorySecurityInheritance]::All
+)
+
+$ACL.AddAccessRule($AccessRule)
+$TargetOU.CommitChanges()
+Write-Host "Vollzugriff (GenericAll) auf OU '$TargetOU_DN' erfolgreich zugewiesen!" -ForegroundColor Green
