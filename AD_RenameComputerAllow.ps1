@@ -1,6 +1,6 @@
 Import-Module ActiveDirectory
 
-$TargetOU_DN = "OU=Rechner,DC=rika,DC=net"
+$TargetOU_DN = "OU=Rechner,DC=Domain,DC=net"
 $GroupName   = "ADS-SEC-Clients-ManageComputers"
 
 $TargetOU = [ADSI]"LDAP://$TargetOU_DN"
